@@ -1,0 +1,3 @@
+include ':instautils'
+include ':app'
+rootProject.name = "InstagramRepost"
