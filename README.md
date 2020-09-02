@@ -16,7 +16,9 @@ Insta Utils uses a number of open source libraries to work properly:
 
 ### Implemetation
 
-* Coming soon
+```gradle
+implementation 'com.sanjaydevtech.instautils:instautils:1.0.0'
+```
 
 ### Initialisation
 

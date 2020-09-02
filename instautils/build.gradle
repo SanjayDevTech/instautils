@@ -1,38 +1,29 @@
 apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
 
-def githubProperties = new Properties()
-githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+ext {
+    bintrayRepo = 'instautils'
+    bintrayName = 'com.sanjaydevtech.instautils'
 
-def getVersionName ={->
-    return "1.0.0"
+    publishedGroupId = 'com.sanjaydevtech.instautils'
+    libraryName = 'instautils'
+    artifact = 'instautils'
+
+    libraryDescription = 'Instagram post downloader'
+
+    siteUrl = 'https://github.com/SanjayDevTech/instautils'
+    gitUrl = 'https://github.com/SanjayDevTech/instautils.git'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'sanjaydevtech'
+    developerName = 'Sanjay Developer'
+    developerEmail = 'sureshsanjay805@gmail.com'
+
+    licenseName = 'MIT License'
+    licenseUrl = 'https://opensource.org/licenses/MIT'
+    allLicenses = ["MIT"]
 }
 
-def getArtificatId = {->
-    return "instautils"
-}
-
-publishing {
-    publications {
-        bar(MavenPublication) {
-            groupId 'com.github.sanjaydevtech'
-            artifactId getArtificatId()
-            version getVersionName()
-            artifact("$buildDir/outputs/aar/${getArtificatId()}-release.aar")
-        }
-    }
-}
-
-repositories {
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/SanjayDevTech/instautils")
-        credentials {
-            username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
-            password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
-        }
-    }
-}
 
 android {
     compileSdkVersion 30
@@ -55,6 +46,9 @@ android {
         }
     }
 }
+subprojects {
+    tasks.withType(Javadoc).all { enabled = false }
+}
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
@@ -65,3 +59,4 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation 'org.jsoup:jsoup:1.11.2'
 }
+apply from: 'publish.gradle'
