@@ -1,4 +1,38 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+
+def getVersionName ={->
+    return "1.0.0"
+}
+
+def getArtificatId = {->
+    return "instautils"
+}
+
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.github.sanjaydevtech'
+            artifactId getArtificatId()
+            version getVersionName()
+            artifact("$buildDir/outputs/aar/${getArtificatId()}-release.aar")
+        }
+    }
+}
+
+repositories {
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/SanjayDevTech/instautils")
+        credentials {
+            username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
+            password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
+        }
+    }
+}
 
 android {
     compileSdkVersion 30
@@ -30,5 +64,4 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation 'org.jsoup:jsoup:1.11.2'
-
 }
