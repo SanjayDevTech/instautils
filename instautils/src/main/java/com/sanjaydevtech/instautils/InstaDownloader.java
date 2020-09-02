@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  * Downloader Class to download insta posts
  *
  * @author Sanjay Developer
- * @version 0.0.1
+ * @version 1.0.0
  */
 public class InstaDownloader {
     private Activity activity;
