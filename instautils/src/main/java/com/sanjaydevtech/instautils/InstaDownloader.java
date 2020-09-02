@@ -1,6 +1,6 @@
 package com.sanjaydevtech.instautils;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
@@ -12,6 +12,16 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.DataNode;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Downloader Class to download insta posts
  *
@@ -19,16 +29,20 @@ import com.bumptech.glide.request.transition.Transition;
  * @version 0.0.1
  */
 public class InstaDownloader {
-    private Context context;
+    private Activity activity;
     private InstaResponse response;
+    private static final String TAG = InstaDownloader.class.getSimpleName();
+    private static final String IMAGE_PATTERN = "\"src\":\"([^\"]*)\"";
+    private static final String VIDEO_PATTERN = "\"video_url\":\"([^\"]*)\"";
+    private static final String NOISE = "\\u0026";
 
     /**
      * Public constructor
      *
-     * @param context Context of the activity
+     * @param activity Context of the activity
      */
-    public InstaDownloader(Context context) {
-        this.context = context;
+    public InstaDownloader(Activity activity) {
+        this.activity = activity;
     }
 
     /**
@@ -46,12 +60,68 @@ public class InstaDownloader {
      * @param url URL of that post
      * @throws NullPointerException NullPointerException is thrown if InstaResponse is not attached
      */
-    public void get(String url) throws NullPointerException {
+    public void get(final String url) throws NullPointerException {
         if (response == null) {
             throw new NullPointerException("No InstaResponse Listener is attached");
         }
-        //TODO to retrieve the image or video url
-        response.onResponse(new InstaPost("", InstaPost.INSTA_IMAGE));
+        new Thread() {
+            public void run() {
+                boolean isData = false;
+                try {
+                    Document document = Jsoup.connect(url).userAgent("Mozilla/5.0").get();
+                    Elements scripts = document.getElementsByTag("script");
+                    for (Element script : scripts) {
+                        if (isData) {
+                            break;
+                        }
+                        for (DataNode node : script.dataNodes()) {
+                            String url = matchPattern(node.getWholeData(), IMAGE_PATTERN);
+                            if (url != null) {
+                                url = url.replace(NOISE, "&");
+                                final String finalUrl = url;
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        response.onResponse(new InstaPost(finalUrl, InstaPost.INSTA_IMAGE));
+                                    }
+                                });
+                                isData = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!isData) {
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                response.onError(new NullPointerException("No data resource found"));
+                            }
+                        });
+                    }
+
+                } catch (final IOException e) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            response.onError(e);
+                        }
+                    });
+                }
+
+            }
+
+
+        }.start();
+    }
+
+    private String matchPattern(String data, String patTxt) {
+        Pattern pattern = Pattern.compile(patTxt);
+        Matcher matcher = pattern.matcher(data);
+        boolean patMatch = matcher.find();
+        if (!patMatch) {
+            return null;
+        }
+        return matcher.group(1);
     }
 
     /**
@@ -69,7 +139,7 @@ public class InstaDownloader {
         if (post.getType() != InstaPost.INSTA_IMAGE) {
             throw new IllegalArgumentException("Given InstaPost is not an Image");
         }
-        Glide.with(context)
+        Glide.with(activity)
                 .asBitmap()
                 .load(post.getUrl())
                 .into(new CustomTarget<Bitmap>() {
@@ -95,7 +165,7 @@ public class InstaDownloader {
         if (post.getType() != InstaPost.INSTA_IMAGE) {
             throw new IllegalArgumentException("Given InstaPost is not an image");
         }
-        Glide.with(context)
+        Glide.with(activity)
                 .load(post.getUrl())
                 .into(imageView);
     }
