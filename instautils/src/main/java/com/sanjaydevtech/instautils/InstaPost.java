@@ -6,12 +6,14 @@ package com.sanjaydevtech.instautils;
 public class InstaPost {
     private String url;
     private int type;
+    private String originalUrl;
     public static final int INSTA_IMAGE = 0;
     public static final int INSTA_VIDEO = 1;
 
-    InstaPost(String url, int type) {
+    InstaPost(String url, int type, String originalUrl) {
         this.url = url;
         this.type = type;
+        this.originalUrl = originalUrl;
     }
 
     /**
@@ -30,5 +32,14 @@ public class InstaPost {
      */
     public int getType() {
         return type;
+    }
+
+    /**
+     * get he original post url
+     *
+     * @return a String of post url
+     */
+    public String getOriginalUrl() {
+        return originalUrl;
     }
 }

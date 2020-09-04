@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements InstaResponse {
             public void onClick(View view) {
                 Pattern pattern = Pattern.compile(URL_PATTERN);
                 Matcher matcher = pattern.matcher(urlTxt.getText().toString());
-                if(matcher.find()) {
+                if (matcher.find()) {
                     downloader.get(urlTxt.getText().toString()); // Request the post data
                 } else {
                     Toast.makeText(MainActivity.this, "Invalid insta url", Toast.LENGTH_SHORT).show();
@@ -53,9 +53,8 @@ public class MainActivity extends AppCompatActivity implements InstaResponse {
     public void onResponse(InstaPost post) {
         Log.d(TAG, post.getUrl());
         // Retrieve the post object after request
-        if(post.getType() == InstaPost.INSTA_IMAGE) {
-            downloader.setImage(post, img);
-        }
+        downloader.setImage(post, img);
+        Log.d(TAG, "Type: "+post.getType());
     }
 
     @Override

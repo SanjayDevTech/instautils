@@ -35,6 +35,7 @@ public class InstaDownloader {
     private static final String IMAGE_PATTERN = "\"src\":\"([^\"]*)\"";
     private static final String VIDEO_PATTERN = "\"video_url\":\"([^\"]*)\"";
     private static final String NOISE = "\\u0026";
+    private static final String POST_PATTERN = "^(https://www.instagram.com/p/[^/]+/)";
 
     /**
      * Public constructor
@@ -75,14 +76,27 @@ public class InstaDownloader {
                             break;
                         }
                         for (DataNode node : script.dataNodes()) {
-                            String url = matchPattern(node.getWholeData(), IMAGE_PATTERN);
-                            if (url != null) {
-                                url = url.replace(NOISE, "&");
-                                final String finalUrl = url;
+                            String urlImg = matchPattern(node.getWholeData(), IMAGE_PATTERN);
+                            if (urlImg != null) {
+                                String urlVid = matchPattern(node.getWholeData(), VIDEO_PATTERN);
+                                if (urlVid != null) {
+                                    urlVid = urlVid.replace(NOISE, "&");
+                                    final String finalUrl = urlVid;
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            response.onResponse(new InstaPost(finalUrl, InstaPost.INSTA_VIDEO, url));
+                                        }
+                                    });
+                                    isData = true;
+                                    break;
+                                }
+                                urlImg = urlImg.replace(NOISE, "&");
+                                final String finalUrl = urlImg;
                                 activity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        response.onResponse(new InstaPost(finalUrl, InstaPost.INSTA_IMAGE));
+                                        response.onResponse(new InstaPost(finalUrl, InstaPost.INSTA_IMAGE, url));
                                     }
                                 });
                                 isData = true;
@@ -125,23 +139,23 @@ public class InstaDownloader {
     }
 
     /**
-     * Retrieve the bitmap of the image post
+     * Retrieve the bitmap of the image post or thumbnail of video post
      *
      * @param post       InstaPost object retrieved from InstaResponse
      * @param instaImage Listener to handle bitmap
-     * @throws NullPointerException     If InstaImage Listener is not attached
-     * @throws IllegalArgumentException If the passed Post is not an image
+     * @throws NullPointerException If InstaImage Listener is not attached
      */
-    public void getBitmap(InstaPost post, final InstaImage instaImage) throws NullPointerException, IllegalArgumentException {
+    public void getBitmap(InstaPost post, final InstaImage instaImage) throws NullPointerException {
         if (instaImage == null) {
             throw new NullPointerException("No InstaImage listener attached");
         }
-        if (post.getType() != InstaPost.INSTA_IMAGE) {
-            throw new IllegalArgumentException("Given InstaPost is not an Image");
+        String imgUrl = post.getUrl();
+        if (post.getType() == InstaPost.INSTA_VIDEO) {
+            imgUrl = matchPattern(post.getOriginalUrl(), POST_PATTERN) + "media?size=l";
         }
         Glide.with(activity)
                 .asBitmap()
-                .load(post.getUrl())
+                .load(imgUrl)
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
@@ -159,14 +173,14 @@ public class InstaDownloader {
      *
      * @param post      InstaPost object
      * @param imageView To which view that image has to set
-     * @throws IllegalArgumentException Thrown if InstaPost is not an Image
      */
-    public void setImage(InstaPost post, ImageView imageView) throws IllegalArgumentException {
-        if (post.getType() != InstaPost.INSTA_IMAGE) {
-            throw new IllegalArgumentException("Given InstaPost is not an image");
+    public void setImage(InstaPost post, ImageView imageView) {
+        String imgUrl = post.getUrl();
+        if (post.getType() == InstaPost.INSTA_VIDEO) {
+            imgUrl = matchPattern(post.getOriginalUrl(), POST_PATTERN) + "media?size=l";
         }
         Glide.with(activity)
-                .load(post.getUrl())
+                .load(imgUrl)
                 .into(imageView);
     }
 }
