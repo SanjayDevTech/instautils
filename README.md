@@ -42,10 +42,10 @@ String sampleUrl = "https://www.instagram.com/p/123456"
 downloader.get(sampleUrl);
 ```
 
-#### Setting image
+### Setting image
 After retrieving the InstaPost object you can set the image to any ImageView
 ```java
-ImageView img = findViewById(R.is.imageView);
+ImageView img = findViewById(R.id.imageView);
 downloader.setImage(post, img);
 ```
 Or you can get a Bitmap object
@@ -59,7 +59,7 @@ downloader.getBitmap(post, new InstaImage() {
 });
 ```
 
-#### Want to contribute?
+### Want to contribute?
 * Fork this repository.
 * Clone to your local machine
 ```sh
