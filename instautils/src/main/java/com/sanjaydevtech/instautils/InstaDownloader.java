@@ -13,29 +13,22 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Downloader Class to download insta posts
  *
  * @author Sanjay Developer
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class InstaDownloader {
     private Activity activity;
     private InstaResponse response;
     private static final String TAG = InstaDownloader.class.getSimpleName();
-    private static final String IMAGE_PATTERN = "\"src\":\"([^\"]*)\"";
-    private static final String VIDEO_PATTERN = "\"video_url\":\"([^\"]*)\"";
-    private static final String NOISE = "\\u0026";
-    private static final String POST_PATTERN = "^(https://www.instagram.com/p/[^/]+/)";
 
     /**
      * Public constructor
@@ -67,50 +60,69 @@ public class InstaDownloader {
         }
         new Thread() {
             public void run() {
-                boolean isData = false;
                 try {
                     Document document = Jsoup.connect(url).userAgent("Mozilla/5.0").get();
-                    Elements scripts = document.getElementsByTag("script");
-                    for (Element script : scripts) {
-                        if (isData) {
-                            break;
+                    Elements metas = document.getElementsByTag("meta");
+                    String img = null, vid = null, type = null;
+                    for (Element meta : metas) {
+                        String property = meta.attr("property");
+                        if (property.equals("og:image")) {
+                            img = meta.attr("content");
+                            continue;
                         }
-                        for (DataNode node : script.dataNodes()) {
-                            String urlImg = matchPattern(node.getWholeData(), IMAGE_PATTERN);
-                            if (urlImg != null) {
-                                String urlVid = matchPattern(node.getWholeData(), VIDEO_PATTERN);
-                                if (urlVid != null) {
-                                    urlVid = urlVid.replace(NOISE, "&");
-                                    final String finalUrl = urlVid;
-                                    activity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            response.onResponse(new InstaPost(finalUrl, InstaPost.INSTA_VIDEO, url));
-                                        }
-                                    });
-                                    isData = true;
-                                    break;
-                                }
-                                urlImg = urlImg.replace(NOISE, "&");
-                                final String finalUrl = urlImg;
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        response.onResponse(new InstaPost(finalUrl, InstaPost.INSTA_IMAGE, url));
-                                    }
-                                });
-                                isData = true;
-                                break;
-                            }
+                        if (property.equals("og:video")) {
+                            vid = meta.attr("content");
+                            continue;
+                        }
+                        if (property.equals("og:type")) {
+                            type = meta.attr("content");
                         }
                     }
-                    if (!isData) {
+                    if (type == null || (!type.equals("video") && !type.equals("instapp:photo"))) {
                         activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 response.onError(new NullPointerException("No data resource found"));
                             }
                         });
+                    } else {
+                        if (type.equals("instapp:photo")) {
+                            if (img != null) {
+                                final String finalImg = img;
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        response.onResponse(new InstaPost(finalImg, InstaPost.INSTA_IMAGE, finalImg));
+                                    }
+                                });
+                            } else {
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        response.onError(new NullPointerException("No data resource found"));
+                                    }
+                                });
+                            }
+                        } else {
+                            if (img != null && vid != null) {
+                                final String finalImg1 = img;
+                                final String finalVid = vid;
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        response.onResponse(new InstaPost(finalVid, InstaPost.INSTA_VIDEO, finalImg1));
+                                    }
+                                });
+                            } else {
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        response.onError(new NullPointerException("No data resource found"));
+                                    }
+                                });
+                            }
+                        }
+
                     }
 
                 } catch (final IOException e) {
@@ -128,15 +140,6 @@ public class InstaDownloader {
         }.start();
     }
 
-    private String matchPattern(String data, String patTxt) {
-        Pattern pattern = Pattern.compile(patTxt);
-        Matcher matcher = pattern.matcher(data);
-        boolean patMatch = matcher.find();
-        if (!patMatch) {
-            return null;
-        }
-        return matcher.group(1);
-    }
 
     /**
      * Retrieve the bitmap of the image post or thumbnail of video post
@@ -149,10 +152,7 @@ public class InstaDownloader {
         if (instaImage == null) {
             throw new NullPointerException("No InstaImage listener attached");
         }
-        String imgUrl = post.getUrl();
-        if (post.getType() == InstaPost.INSTA_VIDEO) {
-            imgUrl = matchPattern(post.getOriginalUrl(), POST_PATTERN) + "media?size=l";
-        }
+        String imgUrl = post.getThumbnailUrl();
         Glide.with(activity)
                 .asBitmap()
                 .load(imgUrl)
@@ -175,10 +175,7 @@ public class InstaDownloader {
      * @param imageView To which view that image has to set
      */
     public void setImage(InstaPost post, ImageView imageView) {
-        String imgUrl = post.getUrl();
-        if (post.getType() == InstaPost.INSTA_VIDEO) {
-            imgUrl = matchPattern(post.getOriginalUrl(), POST_PATTERN) + "media?size=l";
-        }
+        String imgUrl = post.getThumbnailUrl();
         Glide.with(activity)
                 .load(imgUrl)
                 .into(imageView);

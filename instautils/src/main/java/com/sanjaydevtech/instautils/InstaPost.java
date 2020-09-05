@@ -6,14 +6,14 @@ package com.sanjaydevtech.instautils;
 public class InstaPost {
     private String url;
     private int type;
-    private String originalUrl;
+    private String thumbnailUrl;
     public static final int INSTA_IMAGE = 0;
     public static final int INSTA_VIDEO = 1;
 
-    InstaPost(String url, int type, String originalUrl) {
+    InstaPost(String url, int type, String thumbnailUrl) {
         this.url = url;
         this.type = type;
-        this.originalUrl = originalUrl;
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     /**
@@ -35,11 +35,11 @@ public class InstaPost {
     }
 
     /**
-     * get he original post url
+     * get the thumbnail
      *
-     * @return a String of post url
+     * @return a String
      */
-    public String getOriginalUrl() {
-        return originalUrl;
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
     }
 }

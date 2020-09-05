@@ -4,7 +4,7 @@ Insta Utils is a Insta post downloader for Android applications written in **Jav
 
 # New Features!
 
-  - Download the Insta public post (Only Image)
+  - Download the Insta public post
   - Set the image directly to ImageView
 
 ### Credits
@@ -17,7 +17,7 @@ Insta Utils uses a number of open source libraries to work properly:
 ### Implemetation
 
 ```gradle
-implementation 'com.sanjaydevtech.instautils:instautils:1.0.0'
+implementation 'com.sanjaydevtech.instautils:instautils:1.0.1
 ```
 
 ### Initialisation
@@ -29,6 +29,7 @@ downloader.setResponse(new InstaResponse() {
     public void onResponse(InstaPost post) {
         int type = post.getType(); // InstaPost.INSTA_IMAGE or InstaPost.INSTA_VIDEO
         String url = post.getUrl();
+        String thumbUrl = post.getThumbnailUrl();
     }
     @Override
     public void onError(Exception e) {}

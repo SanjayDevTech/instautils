@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/SanjayDevTech/instautils'
     gitUrl = 'https://github.com/SanjayDevTech/instautils.git'
 
-    libraryVersion = '1.0.0'
+    libraryVersion = '1.0.1'
 
     developerId = 'sanjaydevtech'
     developerName = 'Sanjay Developer'
@@ -32,8 +32,6 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
