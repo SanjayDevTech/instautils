@@ -18,6 +18,8 @@ android:
   components:
     - tools
     - platform-tools
+    - android-29
+    - sys-img-armeabi-v7a-android-29
     
     # Additional components
     - extra-google-google_play_services
