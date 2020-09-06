@@ -40,3 +40,22 @@ before_install:
   - echo "y" | ${ANDROID_HOME}/tools/bin/sdkmanager "extras;android;m2repository"
   - echo "y" | ${ANDROID_HOME}/tools/bin/sdkmanager "extras;google;m2repository"
   - export LANG=en_US.UTF-8
+
+before_script:
+  - echo no | android create avd --force -n test -t android-29 --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+
+script:
+  - ./gradlew build connectedCheck
+  - ./gradlew clean build
+
+deploy:
+  provider: script
+  script: ./gradlew :clean :droidils:assembleRelease :droidils:bintrayUpload
+  skip_cleanup: true # to upload artifacts created during the build
+  dry-run: false
+
+  on:
+    branch: master
