@@ -1,0 +1,4 @@
+language: android
+android: 
+        - "stable"
+jdk: oraclejdk8
