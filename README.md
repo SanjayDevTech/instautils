@@ -19,7 +19,7 @@ Insta Utils uses a number of open source libraries to work properly:
 ### Implemetation
 
 ```gradle
-implementation 'com.sanjaydevtech.instautils:instautils:1.0.1
+implementation 'com.sanjaydevtech.instautils:instautils:1.0.1'
 ```
 
 ### Initialisation
@@ -41,7 +41,7 @@ downloader.setResponse(new InstaResponse() {
 ### Requesting a Post
 
 ```java
-String sampleUrl = "https://www.instagram.com/p/123456"
+String sampleUrl = "https://www.instagram.com/p/123456";
 downloader.get(sampleUrl);
 ```
 
