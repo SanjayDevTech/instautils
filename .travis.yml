@@ -55,7 +55,7 @@ script:
 
 deploy:
   provider: script
-  script: ./gradlew :clean :droidils:assembleRelease :droidils:bintrayUpload
+  script: ./gradlew :clean :instautils:assembleRelease :instautils:bintrayUpload
   skip_cleanup: true # to upload artifacts created during the build
   dry-run: false
 
