@@ -20,10 +20,48 @@ Insta Utils uses a number of open source libraries to work properly:
 ### Implemetation
 
 ```gradle
-implementation 'com.sanjaydevtech.instautils:instautils:1.0.1'
+implementation 'com.sanjaydevtech.instautils:instautils:1.0.2'
 ```
 
-### Initialisation
+### Instagram DP
+
+#### Fetching the url
+```java
+String instaProfile = "https://instagram.com/SanjayDevTech";
+InstaScraper.getDP(this, instaProfile, new InstaResponse() {
+    @Override
+    public void onResponse(InstaPost post) {
+        int type = post.getType(); // InstaPost.INSTA_PROFILE
+        String url = post.getUrl();
+        String thumbUrl = post.getThumbnailUrl();
+    }
+    @Override
+    public void onError(Exception e) {}
+});
+```
+
+#### Displaying
+After retrieving the InstaPost object you can set the image to an ImageView
+```java
+InstaDownloader downloader = new InstaDowloader(this);
+ImageView img = findViewById(R.id.imageView);
+downloader.setImage(post, img);
+```
+Or you can get a Bitmap object
+```java
+downloader.getBitmap(post, new InstaImage() {
+    @Override
+    public void onBitmapLoaded(Bitmap bitmap) {
+        ImageView img = findViewById(R.id.imageView);
+        img.setImageBitmap(bitmap);
+    }
+});
+```
+
+
+### Image or Video Post
+
+#### Initialisation
 
 ```java
 InstaDownloader downloader = new InstaDowloader(this);
@@ -39,15 +77,15 @@ downloader.setResponse(new InstaResponse() {
 });
 ```
 
-### Requesting a Post
+#### Requesting a Post
 
 ```java
 String sampleUrl = "https://www.instagram.com/p/123456";
 downloader.get(sampleUrl);
 ```
 
-### Setting image
-After retrieving the InstaPost object you can set the image to any ImageView
+#### Setting image
+After retrieving the InstaPost object you can set the image to an ImageView
 ```java
 ImageView img = findViewById(R.id.imageView);
 downloader.setImage(post, img);
@@ -83,7 +121,6 @@ git push
 ### Todos
 
  - Find hidden bugs
- - Add insta video downloading functionality
 
 License
 ----

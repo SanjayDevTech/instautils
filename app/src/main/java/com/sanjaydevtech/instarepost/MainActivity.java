@@ -15,6 +15,7 @@ import com.sanjaydevtech.instautils.InstaDownloader;
 import com.sanjaydevtech.instautils.InstaImage;
 import com.sanjaydevtech.instautils.InstaPost;
 import com.sanjaydevtech.instautils.InstaResponse;
+import com.sanjaydevtech.instautils.InstaScraper;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements InstaResponse {
     private InstaDownloader downloader; // Declare the InstaDownloader
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String URL_PATTERN = "^https://www.instagram.com/p/.+";
+    private static final String DP_URL_PATTERN = "^(https://(www\\.)?instagram\\.com/[^p][0-9a-zA-Z_.]+)";
     private ImageView img;
 
     @Override
@@ -43,7 +45,13 @@ public class MainActivity extends AppCompatActivity implements InstaResponse {
                 if (matcher.find()) {
                     downloader.get(urlTxt.getText().toString()); // Request the post data
                 } else {
-                    Toast.makeText(MainActivity.this, "Invalid insta url", Toast.LENGTH_SHORT).show();
+                    pattern = Pattern.compile(DP_URL_PATTERN);
+                    matcher = pattern.matcher(urlTxt.getText().toString());
+                    if(matcher.find()) {
+                        InstaScraper.getDP(MainActivity.this, urlTxt.getText().toString(), MainActivity.this);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Invalid insta url", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });

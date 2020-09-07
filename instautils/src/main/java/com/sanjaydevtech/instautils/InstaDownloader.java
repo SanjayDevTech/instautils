@@ -23,7 +23,7 @@ import java.io.IOException;
  * Downloader Class to download insta posts
  *
  * @author Sanjay Developer
- * @version 1.0.1
+ * @version 1.0.2
  */
 public class InstaDownloader {
     private Activity activity;
@@ -59,6 +59,7 @@ public class InstaDownloader {
             throw new NullPointerException("No InstaResponse Listener is attached");
         }
         new Thread() {
+            @Override
             public void run() {
                 try {
                     Document document = Jsoup.connect(url).userAgent("Mozilla/5.0").get();

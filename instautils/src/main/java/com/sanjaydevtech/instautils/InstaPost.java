@@ -9,6 +9,7 @@ public class InstaPost {
     private String thumbnailUrl;
     public static final int INSTA_IMAGE = 0;
     public static final int INSTA_VIDEO = 1;
+    public static final int INSTA_PROFILE = 2;
 
     InstaPost(String url, int type, String thumbnailUrl) {
         this.url = url;
