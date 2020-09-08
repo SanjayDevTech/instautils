@@ -51,4 +51,5 @@ deploy:
   script: ./gradlew clean
 
   on:
+    tags: true
     branch: master
