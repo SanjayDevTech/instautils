@@ -36,7 +36,9 @@ InstaScraper.getDP(this, instaProfile, new InstaResponse() {
         String thumbUrl = post.getThumbnailUrl();
     }
     @Override
-    public void onError(Exception e) {}
+    public void onError(Exception e) {
+    	Log.d("MainActivity", "Exception => "+e);
+    }
 });
 ```
 
@@ -73,7 +75,9 @@ downloader.setResponse(new InstaResponse() {
         String thumbUrl = post.getThumbnailUrl();
     }
     @Override
-    public void onError(Exception e) {}
+    public void onError(Exception e) {
+    	Log.d("MainActivity", "Exception => "+e);
+    }
 });
 ```
 
