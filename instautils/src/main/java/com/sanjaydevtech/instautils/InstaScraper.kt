@@ -1,30 +1,30 @@
-package com.sanjaydevtech.instautils;
+package com.sanjaydevtech.instautils
 
-import android.app.Activity;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.DataNode;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
+import java.io.IOException
+import java.util.regex.Pattern
 
 /**
  * InstaScraper class for downloading dp
  */
-public class InstaScraper {
+object InstaScraper {
+    private const val DP_URL = "^(https://(www\\.)?instagram\\.com/[0-9a-zA-Z_.]+)"
+    private const val NOISE = "\\u0026"
+    private const val PROFILE_HD_PATTERN = "\"profile_pic_url_hd\":\"([^\"]*)\""
+    private const val PROFILE_PATTERN = "\"profile_pic_url\":\"([^\"]*)\""
 
-    private static final String DP_URL = "^(https://(www\\.)?instagram\\.com/[0-9a-zA-Z_.]+)";
-    private static final String NOISE = "\\u0026";
-    private static final String PROFILE_HD_PATTERN = "\"profile_pic_url_hd\":\"([^\"]*)\"";
-    private static final String PROFILE_PATTERN = "\"profile_pic_url\":\"([^\"]*)\"";
-
-
-    InstaScraper() {
-
+    @JvmStatic
+    fun getDP(activity: FragmentActivity, url: String, response: (InstaTask) -> Unit) {
+        getDP(activity, url, object : InstaResponse {
+            override fun onResponse(instaTask: InstaTask) {
+                response(instaTask)
+            }
+        })
     }
 
     /**
@@ -33,78 +33,45 @@ public class InstaScraper {
      * @param activity Current activity
      * @param url      Url of the instagram profile
      * @param response InstaResponse instance
-     * @throws NullPointerException Throws if no InstaResponse is attached
+     * @throws IllegalArgumentException Throws if no InstaResponse is attached
      */
-
-    public static void getDP(final Activity activity, final String url, final InstaResponse response) throws NullPointerException {
-        if (response == null) {
-            throw new NullPointerException("No InstaResponse Listener is attached");
-        }
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    boolean isData = false;
-                    Document document = Jsoup.connect(url).userAgent("Mozilla/5.0").get();
-                    Elements scripts = document.getElementsByTag("script");
-                    for (Element script : scripts) {
-                        if (isData) {
-                            break;
-                        }
-                        for (DataNode dataNode : script.dataNodes()) {
-                            String scriptData = dataNode.getWholeData().trim();
-                            if (scriptData.startsWith("window._sharedData")) {
-                                String profilePicHD = matchPattern(scriptData, PROFILE_HD_PATTERN);
-                                String profilePic = matchPattern(scriptData, PROFILE_PATTERN);
-                                if (profilePicHD != null) {
-                                    profilePicHD = profilePicHD.replace(NOISE, "&");
-                                }
-                                if (profilePic != null) {
-                                    profilePic = profilePic.replace(NOISE, "&");
-                                }
-                                final String finalProfilePicHD = profilePicHD;
-                                final String finalProfilePic = profilePic;
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        response.onResponse(new InstaPost(finalProfilePicHD, InstaPost.INSTA_PROFILE, finalProfilePic));
-                                    }
-                                });
-                                isData = true;
-                                break;
+    @JvmStatic
+    fun getDP(activity: FragmentActivity, url: String, response: InstaResponse) {
+        activity.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val document = Jsoup.connect(url).userAgent("Mozilla/5.0").get()
+                val scripts = document.getElementsByTag("script")
+                for (script in scripts) {
+                    for (dataNode in script.dataNodes()) {
+                        val scriptData = dataNode.wholeData.trim { it <= ' ' }
+                        if (scriptData.startsWith("window._sharedData")) {
+                            var profilePicHD = matchPattern(scriptData, PROFILE_HD_PATTERN)
+                            var profilePic = matchPattern(scriptData, PROFILE_PATTERN)
+                            if (profilePicHD != null) {
+                                profilePicHD = profilePicHD.replace(NOISE, "&")
                             }
+                            if (profilePic != null) {
+                                profilePic = profilePic.replace(NOISE, "&")
+                            }
+                            withContext(Dispatchers.Main) { response.onResponse(InstaTask(InstaPost(profilePicHD!!, InstaPost.INSTA_PROFILE, profilePic!!), null)) }
+                            return@launch
                         }
                     }
-                    if (!isData) {
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                response.onError(new NullPointerException("No data resource found"));
-                            }
-                        });
-                    }
-
-                } catch (final IOException e) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            response.onError(e);
-                        }
-                    });
                 }
+                withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, IllegalArgumentException("No data resource found"))) }
 
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, e)) }
             }
-        }.start();
-
+        }
     }
 
-    private static String matchPattern(String data, String patTxt) {
-        Pattern pattern = Pattern.compile(patTxt);
-        Matcher matcher = pattern.matcher(data);
-        boolean patMatch = matcher.find();
-        if (!patMatch) {
-            return null;
-        }
-        return matcher.group(1);
+    private fun matchPattern(data: String, patTxt: String): String? {
+        val pattern = Pattern.compile(patTxt)
+        val matcher = pattern.matcher(data)
+        val patMatch = matcher.find()
+        return if (!patMatch) {
+            null
+        } else matcher.group(1)
     }
 }

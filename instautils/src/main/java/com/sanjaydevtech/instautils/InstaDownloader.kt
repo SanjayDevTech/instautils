@@ -1,23 +1,18 @@
-package com.sanjaydevtech.instautils;
+package com.sanjaydevtech.instautils
 
-import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.widget.ImageView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.widget.ImageView
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
+import java.io.IOException
 
 /**
  * Downloader Class to download insta posts
@@ -25,148 +20,82 @@ import java.io.IOException;
  * @author Sanjay Developer
  * @version 1.0.2
  */
-public class InstaDownloader {
-    private Activity activity;
-    private InstaResponse response;
-    private static final String TAG = InstaDownloader.class.getSimpleName();
+class InstaDownloader(private val activity: FragmentActivity, private val response: InstaResponse) {
 
-    /**
-     * Public constructor
-     *
-     * @param activity Context of the activity
-     */
-    public InstaDownloader(Activity activity) {
-        this.activity = activity;
-    }
-
-    /**
-     * To attach the InstaResponse Listener
-     *
-     * @param response Attach the InstaResponse Listener
-     */
-    public void setResponse(InstaResponse response) {
-        this.response = response;
-    }
+    constructor(activity: FragmentActivity, response: (InstaTask) -> Unit) : this(activity, object : InstaResponse {
+        override fun onResponse(instaTask: InstaTask) {
+            response(instaTask)
+        }
+    })
 
     /**
      * Get the url of the post
      *
      * @param url URL of that post
-     * @throws NullPointerException NullPointerException is thrown if InstaResponse is not attached
      */
-    public void get(final String url) throws NullPointerException {
-        if (response == null) {
-            throw new NullPointerException("No InstaResponse Listener is attached");
-        }
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    Document document = Jsoup.connect(url).userAgent("Mozilla/5.0").get();
-                    Elements metas = document.getElementsByTag("meta");
-                    String img = null, vid = null, type = null;
-                    for (Element meta : metas) {
-                        String property = meta.attr("property");
-                        if (property.equals("og:image")) {
-                            img = meta.attr("content");
-                            continue;
-                        }
-                        if (property.equals("og:video")) {
-                            vid = meta.attr("content");
-                            continue;
-                        }
-                        if (property.equals("og:type")) {
-                            type = meta.attr("content");
-                        }
+    fun get(url: String) {
+        activity.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val document = Jsoup.connect(url).userAgent("Mozilla/5.0").get()
+                val metas = document.getElementsByTag("meta")
+                var img: String? = null
+                var vid: String? = null
+                var type: String? = null
+                for (meta in metas) {
+                    val property = meta.attr("property")
+                    if (property == "og:image") {
+                        img = meta.attr("content")
+                        continue
                     }
-                    if (type == null || (!type.equals("video") && !type.equals("instapp:photo"))) {
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                response.onError(new NullPointerException("No data resource found"));
-                            }
-                        });
-                    } else {
-                        if (type.equals("instapp:photo")) {
-                            if (img != null) {
-                                final String finalImg = img;
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        response.onResponse(new InstaPost(finalImg, InstaPost.INSTA_IMAGE, finalImg));
-                                    }
-                                });
-                            } else {
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        response.onError(new NullPointerException("No data resource found"));
-                                    }
-                                });
-                            }
-                        } else {
-                            if (img != null && vid != null) {
-                                final String finalImg1 = img;
-                                final String finalVid = vid;
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        response.onResponse(new InstaPost(finalVid, InstaPost.INSTA_VIDEO, finalImg1));
-                                    }
-                                });
-                            } else {
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        response.onError(new NullPointerException("No data resource found"));
-                                    }
-                                });
-                            }
-                        }
-
+                    if (property == "og:video") {
+                        vid = meta.attr("content")
+                        continue
                     }
-
-                } catch (final IOException e) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            response.onError(e);
-                        }
-                    });
+                    if (property == "og:type") {
+                        type = meta.attr("content")
+                    }
                 }
-
+                if (type == null || type != "video" && type != "instapp:photo") {
+                    withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, IllegalArgumentException("No data resource found"))) }
+                } else {
+                    if (type == "instapp:photo") {
+                        if (img != null) {
+                            withContext(Dispatchers.Main) { response.onResponse(InstaTask(InstaPost(img, InstaPost.INSTA_IMAGE, img), null)) }
+                        } else {
+                            withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, IllegalArgumentException("No data resource found"))) }
+                        }
+                    } else {
+                        if (img != null && vid != null) {
+                            withContext(Dispatchers.Main) { response.onResponse(InstaTask(InstaPost(vid, InstaPost.INSTA_VIDEO, img), null)) }
+                        } else {
+                            withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, IllegalArgumentException("No data resource found"))) }
+                        }
+                    }
+                }
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, e)) }
             }
-
-
-        }.start();
+        }
     }
-
 
     /**
      * Retrieve the bitmap of the image post or thumbnail of video post
      *
      * @param post       InstaPost object retrieved from InstaResponse
      * @param instaImage Listener to handle bitmap
-     * @throws NullPointerException If InstaImage Listener is not attached
      */
-    public void getBitmap(InstaPost post, final InstaImage instaImage) throws NullPointerException {
-        if (instaImage == null) {
-            throw new NullPointerException("No InstaImage listener attached");
-        }
-        String imgUrl = post.getThumbnailUrl();
+    fun getBitmap(post: InstaPost, instaImage: InstaImage) {
+        val imgUrl = post.thumbnailUrl
         Glide.with(activity)
                 .asBitmap()
                 .load(imgUrl)
-                .into(new CustomTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        instaImage.onBitmapLoaded(resource);
+                .into(object : CustomTarget<Bitmap?>() {
+                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap?>?) {
+                        instaImage.onBitmapLoaded(resource)
                     }
 
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
-                    }
-                });
+                    override fun onLoadCleared(placeholder: Drawable?) {}
+                })
     }
 
     /**
@@ -175,10 +104,14 @@ public class InstaDownloader {
      * @param post      InstaPost object
      * @param imageView To which view that image has to set
      */
-    public void setImage(InstaPost post, ImageView imageView) {
-        String imgUrl = post.getThumbnailUrl();
+    fun setImage(post: InstaPost, imageView: ImageView) {
+        val imgUrl = post.thumbnailUrl
         Glide.with(activity)
                 .load(imgUrl)
-                .into(imageView);
+                .into(imageView)
+    }
+
+    companion object {
+        private val TAG = InstaDownloader::class.java.simpleName
     }
 }

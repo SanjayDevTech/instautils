@@ -1,20 +1,13 @@
-package com.sanjaydevtech.instautils;
+package com.sanjaydevtech.instautils
 
 /**
  * InstaResponse to handle download url searching
  */
-public interface InstaResponse {
+fun interface InstaResponse {
     /**
-     * On successful url searching
+     * On completion of url searching
      *
-     * @param post InstaPost object
+     * @param instaTask InstaTask object which holds the post or exception
      */
-    void onResponse(InstaPost post);
-
-    /**
-     * When an error occurs
-     *
-     * @param e Exception
-     */
-    void onError(Exception e);
+    fun onResponse(instaTask: InstaTask)
 }

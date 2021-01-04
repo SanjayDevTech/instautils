@@ -1,16 +1,15 @@
-package com.sanjaydevtech.instautils;
+package com.sanjaydevtech.instautils
 
-import android.graphics.Bitmap;
+import android.graphics.Bitmap
 
 /**
  * InstaImage
  */
-public interface InstaImage {
-
+interface InstaImage {
     /**
      * OnBitmap loaded
      *
      * @param bitmap bitmap from a image post
      */
-    void onBitmapLoaded(Bitmap bitmap);
+    fun onBitmapLoaded(bitmap: Bitmap)
 }

@@ -1,73 +1,75 @@
-package com.sanjaydevtech.instarepost;
+package com.sanjaydevtech.instarepost
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.sanjaydevtech.instautils.InstaDownloader
+import com.sanjaydevtech.instautils.InstaResponse
+import com.sanjaydevtech.instautils.InstaScraper
+import com.sanjaydevtech.instautils.InstaTask
+import java.util.regex.Pattern
 
-import android.graphics.Bitmap;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
+class MainActivity : AppCompatActivity() {
+    private lateinit var downloader: InstaDownloader
+    private lateinit var img: ImageView
 
-import com.sanjaydevtech.instautils.InstaDownloader;
-import com.sanjaydevtech.instautils.InstaImage;
-import com.sanjaydevtech.instautils.InstaPost;
-import com.sanjaydevtech.instautils.InstaResponse;
-import com.sanjaydevtech.instautils.InstaScraper;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+        downloader = InstaDownloader(this) { instaTask ->
+            onResponse(instaTask)
+        }
 
-public class MainActivity extends AppCompatActivity implements InstaResponse {
+        val urlTxt: EditText = findViewById(R.id.urlTxt)
+        val doneBtn: Button = findViewById(R.id.doneBtn)
+        val testBtn: Button = findViewById(R.id.test_btn)
+        img = findViewById(R.id.imageView)
 
-    private InstaDownloader downloader; // Declare the InstaDownloader
-    private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String URL_PATTERN = "^https://www.instagram.com/p/.+";
-    private static final String DP_URL_PATTERN = "^(https://(www\\.)?instagram\\.com/[^p][0-9a-zA-Z_.]+)";
-    private ImageView img;
+        testBtn.setOnClickListener {
+            val intent = Intent(this, SecondActivity::class.java)
+            startActivity(intent)
+        }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        downloader = new InstaDownloader(this); // Initialise the downloader
-        downloader.setResponse(this); // Set the response listener
-        final EditText urlTxt = findViewById(R.id.urlTxt);
-        Button doneBtn = findViewById(R.id.doneBtn);
-        img = findViewById(R.id.imageView);
-        doneBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Pattern pattern = Pattern.compile(URL_PATTERN);
-                Matcher matcher = pattern.matcher(urlTxt.getText().toString());
+        doneBtn.setOnClickListener {
+            var pattern = Pattern.compile(URL_PATTERN)
+            var matcher = pattern.matcher(urlTxt.text.toString())
+            if (matcher.find()) {
+                downloader.get(urlTxt.text.toString()) // Request the post data
+            } else {
+                pattern = Pattern.compile(DP_URL_PATTERN)
+                matcher = pattern.matcher(urlTxt.text.toString())
                 if (matcher.find()) {
-                    downloader.get(urlTxt.getText().toString()); // Request the post data
-                } else {
-                    pattern = Pattern.compile(DP_URL_PATTERN);
-                    matcher = pattern.matcher(urlTxt.getText().toString());
-                    if(matcher.find()) {
-                        InstaScraper.getDP(MainActivity.this, urlTxt.getText().toString(), MainActivity.this);
-                    } else {
-                        Toast.makeText(MainActivity.this, "Invalid insta url", Toast.LENGTH_SHORT).show();
+                    InstaScraper.getDP(this@MainActivity, urlTxt.text.toString()) { instaTask ->
+                        onResponse(instaTask)
                     }
+                } else {
+                    Toast.makeText(this@MainActivity, "Invalid insta url", Toast.LENGTH_SHORT).show()
                 }
             }
-        });
+        }
     }
 
-    @Override
-    public void onResponse(InstaPost post) {
-        Log.d(TAG, post.getUrl());
-        // Retrieve the post object after request
-        downloader.setImage(post, img);
-        Log.d(TAG, "Type: "+post.getType());
+    private fun onResponse(instaTask: InstaTask) {
+        val instaPost = instaTask.instaPost
+        if (instaPost != null) {
+            Log.d(TAG, instaPost.url)
+            // Retrieve the post object after request
+            downloader.setImage(instaPost, img)
+            Log.d(TAG, "Type: " + instaPost.type)
+        } else {
+            instaTask.exception!!.printStackTrace()
+        }
     }
 
-    @Override
-    public void onError(Exception e) {
-        // if any exception occurs like Private post
-        e.printStackTrace();
+    companion object {
+        private val TAG = MainActivity::class.java.simpleName
+        private const val URL_PATTERN = "^https://www.instagram.com/p/.+"
+        private const val DP_URL_PATTERN = "^(https://(www\\.)?instagram\\.com/[^p][0-9a-zA-Z_.]+)"
     }
 }

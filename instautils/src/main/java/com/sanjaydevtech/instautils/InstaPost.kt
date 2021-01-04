@@ -1,46 +1,16 @@
-package com.sanjaydevtech.instautils;
+package com.sanjaydevtech.instautils
 
 /**
  * InstaPost Object
  */
-public class InstaPost {
-    private String url;
-    private int type;
-    private String thumbnailUrl;
-    public static final int INSTA_IMAGE = 0;
-    public static final int INSTA_VIDEO = 1;
-    public static final int INSTA_PROFILE = 2;
+data class InstaPost internal constructor(
+        val url: String,
+        val type: Int,
+        val thumbnailUrl: String) {
 
-    InstaPost(String url, int type, String thumbnailUrl) {
-        this.url = url;
-        this.type = type;
-        this.thumbnailUrl = thumbnailUrl;
-    }
-
-    /**
-     * get the post download url
-     *
-     * @return a String
-     */
-    public String getUrl() {
-        return url;
-    }
-
-    /**
-     * get the type
-     *
-     * @return a int
-     */
-    public int getType() {
-        return type;
-    }
-
-    /**
-     * get the thumbnail
-     *
-     * @return a String
-     */
-    public String getThumbnailUrl() {
-        return thumbnailUrl;
+    companion object {
+        const val INSTA_IMAGE = 0
+        const val INSTA_VIDEO = 1
+        const val INSTA_PROFILE = 2
     }
 }
