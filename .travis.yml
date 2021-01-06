@@ -44,13 +44,15 @@ before_install:
   - export LANG=en_US.UTF-8
 
 script:
+  - ./gradlew clean build
+
+before_deploy:
   - git add gradlew
   - git commit -m "Empty"
-  - ./gradlew clean build
 
 deploy:
   provider: script
-  script: ./gradlew clean
+  script: ./gradlew clean build bintrayUpload
 
   on:
     tags: true
