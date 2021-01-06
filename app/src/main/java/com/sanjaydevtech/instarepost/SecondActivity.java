@@ -1,14 +1,13 @@
 package com.sanjaydevtech.instarepost;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.sanjaydevtech.instautils.InstaDownloader;
 import com.sanjaydevtech.instautils.InstaPost;
@@ -34,39 +33,31 @@ public class SecondActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
 
-        downloader = new InstaDownloader(this, new InstaResponse() {
-            @Override
-            public void onResponse(@NotNull InstaTask instaTask) {
-                onResponseMethod(instaTask);
-            }
-        });
+        downloader = new InstaDownloader(this, instaTask ->
+                onResponseMethod(instaTask)
+        );
 
         final EditText urlTxt = findViewById(R.id.urlTxt);
         final Button doneBtn = findViewById(R.id.doneBtn);
         img = findViewById(R.id.imageView);
 
-        doneBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Pattern pattern = Pattern.compile(URL_PATTERN);
-                Matcher matcher = pattern.matcher(urlTxt.getText().toString());
+        doneBtn.setOnClickListener(view -> {
+            Pattern pattern = Pattern.compile(URL_PATTERN);
+            Matcher matcher = pattern.matcher(urlTxt.getText().toString());
+            if (matcher.find()) {
+                downloader.get(urlTxt.getText().toString()); // Request the post data
+            } else {
+                pattern = Pattern.compile(DP_URL_PATTERN);
+                matcher = pattern.matcher(urlTxt.getText().toString());
                 if (matcher.find()) {
-                    downloader.get(urlTxt.getText().toString()); // Request the post data
+                    InstaScraper.getDP(SecondActivity.this, urlTxt.getText().toString(), instaTask ->
+                            onResponseMethod(instaTask)
+                    );
                 } else {
-                    pattern = Pattern.compile(DP_URL_PATTERN);
-                    matcher = pattern.matcher(urlTxt.getText().toString());
-                    if(matcher.find()) {
-                        InstaScraper.getDP(SecondActivity.this, urlTxt.getText().toString(), new InstaResponse() {
-                            @Override
-                            public void onResponse(@NotNull InstaTask instaTask) {
-                                onResponseMethod(instaTask);
-                            }
-                        });
-                    } else {
-                        Toast.makeText(SecondActivity.this, "Invalid insta url", Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(SecondActivity.this, "Invalid insta url", Toast.LENGTH_SHORT).show();
                 }
             }
+
         });
 
     }

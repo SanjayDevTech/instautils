@@ -2,10 +2,9 @@ package com.sanjaydevtech.instautils
 
 import android.graphics.Bitmap
 
-/**
- * InstaImage
+/** InstaImage
  */
-interface InstaImage {
+fun interface InstaImage {
     /**
      * OnBitmap loaded
      *

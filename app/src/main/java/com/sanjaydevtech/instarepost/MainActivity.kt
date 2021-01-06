@@ -9,7 +9,6 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.sanjaydevtech.instautils.InstaDownloader
-import com.sanjaydevtech.instautils.InstaResponse
 import com.sanjaydevtech.instautils.InstaScraper
 import com.sanjaydevtech.instautils.InstaTask
 import java.util.regex.Pattern

@@ -1,7 +1,9 @@
 package com.sanjaydevtech.instautils
 
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,26 +20,34 @@ object InstaScraper {
     private const val PROFILE_HD_PATTERN = "\"profile_pic_url_hd\":\"([^\"]*)\""
     private const val PROFILE_PATTERN = "\"profile_pic_url\":\"([^\"]*)\""
 
+    /**
+     * To retrieve Instagram profile
+     *
+     * @param activity Activity
+     * @param url      Url of the instagram profile
+     * @param response InstaResponse instance
+     */
     @JvmStatic
-    fun getDP(activity: FragmentActivity, url: String, response: (InstaTask) -> Unit) {
-        getDP(activity, url, object : InstaResponse {
-            override fun onResponse(instaTask: InstaTask) {
-                response(instaTask)
-            }
-        })
+    fun getDP(activity: FragmentActivity, url: String, response: InstaResponse) {
+        getDP(activity.lifecycleScope, url, response)
     }
 
     /**
      * To retrieve Instagram profile
      *
-     * @param activity Current activity
+     * @param fragment Fragment
      * @param url      Url of the instagram profile
      * @param response InstaResponse instance
-     * @throws IllegalArgumentException Throws if no InstaResponse is attached
      */
     @JvmStatic
-    fun getDP(activity: FragmentActivity, url: String, response: InstaResponse) {
-        activity.lifecycleScope.launch(Dispatchers.IO) {
+    fun getDP(fragment: Fragment, url: String, response: InstaResponse) {
+        getDP(fragment.viewLifecycleOwner.lifecycleScope, url, response)
+    }
+
+
+    @JvmStatic
+    private fun getDP(scope: CoroutineScope, url: String, response: InstaResponse) {
+        scope.launch(Dispatchers.IO) {
             try {
                 val document = Jsoup.connect(url).userAgent("Mozilla/5.0").get()
                 val scripts = document.getElementsByTag("script")
