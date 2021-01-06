@@ -44,6 +44,8 @@ before_install:
   - export LANG=en_US.UTF-8
 
 script:
+  - git add gradlew
+  - git commit -m "Empty"
   - ./gradlew clean build
 
 deploy:
