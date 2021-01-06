@@ -6,9 +6,8 @@ Insta Utils is a Insta post downloader for Android applications written in **Jav
 [ ![Download](https://api.bintray.com/packages/sanjaydevtech/instautils/com.sanjaydevtech.instautils/images/download.svg) ](https://bintray.com/sanjaydevtech/instautils/com.sanjaydevtech.instautils/_latestVersion)
 
 # New Features!
+Check [CHANGELOG](https://github.com/SanjayDevTech/instautils/blob/master/CHANGELOG.md) for new features and updates
 
-  - Download the Insta public post
-  - Set the image directly to ImageView
 
 ### Credits
 
@@ -17,11 +16,12 @@ Insta Utils uses a number of open source libraries to work properly:
 * JSoup - To parse HTML
 * [Glide](https://github.com/bumptech/glide) - Url to ImageView
 
-### Implemetation
-
+### Implementation
 ```gradle
-implementation 'com.sanjaydevtech.instautils:instautils:1.0.2'
+implementation 'com.sanjaydevtech.instautils:instautils:<latest_version>'
 ```
+Check [Releases](https://github.com/SanjayDevTech/instautils/releases) for Latest version
+
 
 ### Instagram DP
 
@@ -43,9 +43,10 @@ InstaScraper.getDP(this, instaProfile, new InstaResponse() {
 ```
 
 #### Displaying
+
 After retrieving the InstaPost object you can set the image to an ImageView
 ```java
-InstaDownloader downloader = new InstaDowloader(this);
+InstaDownloader downloader = new InstaDownloader(this);
 ImageView img = findViewById(R.id.imageView);
 downloader.setImage(post, img);
 ```
@@ -66,7 +67,7 @@ downloader.getBitmap(post, new InstaImage() {
 #### Initialisation
 
 ```java
-InstaDownloader downloader = new InstaDowloader(this);
+InstaDownloader downloader = new InstaDownloader(this);
 downloader.setResponse(new InstaResponse() {
     @Override
     public void onResponse(InstaPost post) {
@@ -121,10 +122,6 @@ git push
 
 ### Any Issues?
 * Create a new issue on github
-
-### Todos
-
- - Find hidden bugs
 
 License
 ----
