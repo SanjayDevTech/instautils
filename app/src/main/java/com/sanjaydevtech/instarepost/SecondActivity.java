@@ -50,9 +50,7 @@ public class SecondActivity extends AppCompatActivity {
                 pattern = Pattern.compile(DP_URL_PATTERN);
                 matcher = pattern.matcher(urlTxt.getText().toString());
                 if (matcher.find()) {
-                    InstaScraper.getDP(SecondActivity.this, urlTxt.getText().toString(), instaTask ->
-                            onResponseMethod(instaTask)
-                    );
+                    downloader.getDP(urlTxt.getText().toString());
                 } else {
                     Toast.makeText(SecondActivity.this, "Invalid insta url", Toast.LENGTH_SHORT).show();
                 }

@@ -39,15 +39,17 @@ class MainActivity : AppCompatActivity() {
             var pattern = Pattern.compile(URL_PATTERN)
             var matcher = pattern.matcher(urlTxt.text.toString())
             if (matcher.find()) {
+                // If the given url is a post
                 downloader.get(urlTxt.text.toString()) // Request the post data
             } else {
+                // if the given url is not a post
                 pattern = Pattern.compile(DP_URL_PATTERN)
                 matcher = pattern.matcher(urlTxt.text.toString())
                 if (matcher.find()) {
-                    InstaScraper.getDP(this@MainActivity, urlTxt.text.toString()) { instaTask ->
-                        onResponse(instaTask)
-                    }
+                    // if the given url is a profile
+                    downloader.getDP(urlTxt.text.toString())
                 } else {
+                    // The url is invalid
                     Toast.makeText(this@MainActivity, "Invalid insta url", Toast.LENGTH_SHORT).show()
                 }
             }

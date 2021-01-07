@@ -14,6 +14,7 @@ import java.util.regex.Pattern
 /**
  * InstaScraper class for downloading dp
  */
+@Deprecated("Use InstaDownloader.getDP()")
 object InstaScraper {
     private const val DP_URL = "^(https://(www\\.)?instagram\\.com/[0-9a-zA-Z_.]+)"
     private const val NOISE = "\\u0026"

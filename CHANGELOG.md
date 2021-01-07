@@ -9,33 +9,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## Released
+***
+
+## [1.2.0] - 07/01/2021
+### Changed
+- Moved all methods to InstaDownloader class to unify apis
+
+***
 
 ## [1.1.0] - 06/01/2021
-
 ### Added
 - Support for fragments
 
 ### Changed
 - AsyncTask to Kotlin Coroutines
 
+***
 
 ## [1.0.2] - 07/09/2020
-
-## Added
+### Added
 - Can fetch Instagram DP
 
+***
 
 ## [1.0.1] - 06/09/2020
-
-## Added
+### Added
 - Can get both image and video download links
 
-## Changed
+### Changed
 - Approached a new efficient method to retrieve the link
 
+***
 
 ## [1.0.0] - 06/09/2020
-
 ### Added
 - Get the direct download link for image post

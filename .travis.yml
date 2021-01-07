@@ -46,13 +46,9 @@ before_install:
 script:
   - ./gradlew clean build
 
-before_deploy:
-  - git add gradlew
-  - git commit -m "Empty"
-
 deploy:
   provider: script
-  script: ./gradlew clean build bintrayUpload
+  script: ./gradlew bintrayUpload
 
   on:
     tags: true

@@ -17,14 +17,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.io.IOException
+import java.util.regex.Pattern
 
 /**
  * Downloader Class to download insta posts
  *
  * @author Sanjay Developer
- * @version 1.1.0
+ * @version 1.2.0
  */
-class InstaDownloader(private val context: Context?, private val scope: CoroutineScope, private val response: InstaResponse) {
+class InstaDownloader internal constructor(private val context: Context?, private val scope: CoroutineScope, private val response: InstaResponse) {
 
     constructor(activity: FragmentActivity, response: InstaResponse) : this(activity, activity.lifecycleScope, response)
     constructor(fragment: Fragment, response: InstaResponse) : this(fragment.context, fragment.viewLifecycleOwner.lifecycleScope, response)
@@ -80,15 +81,6 @@ class InstaDownloader(private val context: Context?, private val scope: Coroutin
     }
 
     /**
-     * A Kotlin Extension function to set image
-     *
-     * @param post InstaPost instance
-     */
-    fun ImageView.setImage(post: InstaPost) {
-        setImage(post, this)
-    }
-
-    /**
      * Retrieve the bitmap of the image post or thumbnail of video post
      *
      * @param post       InstaPost object retrieved from InstaResponse
@@ -129,7 +121,55 @@ class InstaDownloader(private val context: Context?, private val scope: Coroutin
         }
     }
 
+    /**
+     * To retrieve Instagram profile
+     *
+     * @param url      Url of the instagram profile
+     */
+    fun getDP(url: String) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val document = Jsoup.connect(url).userAgent("Mozilla/5.0").get()
+                val scripts = document.getElementsByTag("script")
+                for (script in scripts) {
+                    for (dataNode in script.dataNodes()) {
+                        val scriptData = dataNode.wholeData.trim { it <= ' ' }
+                        if (scriptData.startsWith("window._sharedData")) {
+                            var profilePicHD = matchPattern(scriptData, PROFILE_HD_PATTERN)
+                            var profilePic = matchPattern(scriptData, PROFILE_PATTERN)
+                            if (profilePicHD != null) {
+                                profilePicHD = profilePicHD.replace(NOISE, "&")
+                            }
+                            if (profilePic != null) {
+                                profilePic = profilePic.replace(NOISE, "&")
+                            }
+                            withContext(Dispatchers.Main) { response.onResponse(InstaTask(InstaPost(profilePicHD!!, InstaPost.INSTA_PROFILE, profilePic!!), null)) }
+                            return@launch
+                        }
+                    }
+                }
+                withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, IllegalArgumentException("No data resource found"))) }
+
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, e)) }
+            }
+        }
+    }
+
+    private fun matchPattern(data: String, patTxt: String): String? {
+        val pattern = Pattern.compile(patTxt)
+        val matcher = pattern.matcher(data)
+        val patMatch = matcher.find()
+        return if (!patMatch) {
+            null
+        } else matcher.group(1)
+    }
+
     companion object {
         private val TAG = InstaDownloader::class.simpleName
+        private const val DP_URL = "^(https://(www\\.)?instagram\\.com/[0-9a-zA-Z_.]+)"
+        private const val NOISE = "\\u0026"
+        private const val PROFILE_HD_PATTERN = "\"profile_pic_url_hd\":\"([^\"]*)\""
+        private const val PROFILE_PATTERN = "\"profile_pic_url\":\"([^\"]*)\""
     }
 }
