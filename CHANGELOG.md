@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `Security` in case of vulnerabilities.
 
 ***
+## [1.2.3] - 27/10/2023
+### Changed
+- Removed JFrog publish configurations and moved to jitpack.io
+- Upgraded the java version to 17
+- Upgraded the gradle and dependency versions
+
+***
 
 ## [1.2.0] - 07/01/2021
 ### Changed
