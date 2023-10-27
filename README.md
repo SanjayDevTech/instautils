@@ -17,8 +17,20 @@ Insta Utils uses a number of open source libraries to work properly:
 - [Glide](https://github.com/bumptech/glide) - Url to ImageView
 
 ## Implementation
+### Project level
 ```gradle
-implementation 'com.sanjaydevtech.instautils:instautils:<latest_version>'
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+### App level
+```gradle
+implementation 'com.github.SanjayDevTech:instautils:<latest_version>'
 ```
 Check [Releases](https://github.com/SanjayDevTech/instautils/releases) for Latest version
 
