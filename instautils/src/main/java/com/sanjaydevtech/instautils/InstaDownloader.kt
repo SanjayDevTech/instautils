@@ -75,6 +75,7 @@ class InstaDownloader internal constructor(private val context: Context?, privat
                     }
                 }
             } catch (e: IOException) {
+                e.printStackTrace()
                 withContext(Dispatchers.Main) { response.onResponse(InstaTask(null, e)) }
             }
         }
