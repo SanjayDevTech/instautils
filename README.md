@@ -1,5 +1,8 @@
 # Insta Utils
 
+## Archived
+Please check [Issue #7](https://github.com/SanjayDevTech/instautils/issues/7)
+
 Insta Utils is a Insta post downloader for Android applications written in **Java**.
 
 [![Build Status](https://travis-ci.com/SanjayDevTech/instautils.svg?branch=master)](https://travis-ci.com/SanjayDevTech/instautils)
